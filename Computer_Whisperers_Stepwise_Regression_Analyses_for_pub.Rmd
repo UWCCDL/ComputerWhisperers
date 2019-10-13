@@ -1,0 +1,167 @@
+---
+title: "Computer Whisperers: Stepwise Regression Analyses"
+author: "Chantel S. Prat, Tara M. Madhyastha, Malayka J. Mottarella, Chu-Hsuan Kuo"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document:
+    toc: true
+---
+
+\pagebreak
+
+# Intro
+
+Included in this R Markdown file are our stepwise regression analyses for predicting 1) Learning Rate, 2) Programming Accuracy, and 3) Declarative Knowledge (please see the corresponding readme.txt file in our github for detailed information on our dependent variables and our predictors). 
+
+For our stepwise regressions, we utilized the package olsrr developed by Aravind Hebbali.
+
+https://www.rdocumentation.org/packages/olsrr/versions/0.5.2
+
+Specifically, the stepwise regression method we chose (ols_step_both_p) builds a "regression model from a set of candidate predictor variables by entering and removing predictors based on p values, in a stepwise manner until there is no variable left to enter or remove any more." Missing values are removed in a listwise manner prior to running the stepwise regression for every dependent variable. Only participants with an EEG Usability score of 1 or greater (indicating that they had at least one detectable alpha peak in the O2 channel) were utilized in analyses.
+
+Finally, Bayesian Information Criterion (BIC) values are reported for every step of the regression analyses for every dependent variable, up to the final model output determined by the stepwise regression.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+library(tidyverse, warn.conflicts=FALSE, quietly=TRUE)
+library(knitr)
+library(olsrr)
+
+rawdata <- read.csv("Computer_Whisperers_Stepwise_Regression_Data_for_pub.csv") %>%
+  filter(EEG_Usability >= 1)
+
+```
+
+\pagebreak
+
+# DV #1: Learning Rate
+
+## Predictors:
+
+* Fluid Intelligence
+* Language Aptitude
+* Numeracy
+* Working Memory Updating
+* Working Memory Span
+* Right Fronto-Temporal Beta Power
+
+```{r, include=FALSE}
+
+learning_rate <- rawdata[, c("Learning_Rate", "Fluid_Intelligence", "Language_Aptitude", "Numeracy", 
+                             "Working_Memory_Updating", "Working_Memory_Span", "Right_FrontoTemporal_Beta_Power")] %>% na.omit()
+
+```
+
+## Stepwise Regression: Predicting Learning Rate
+
+All six (6) predictors are entered into the stepwise regression. The final model consists of Fluid Intelligence, Right Fronto-Temporal Beta Power, and Numeracy.
+
+```{r, echo=FALSE}
+
+learning_rate_model <- lm(Learning_Rate ~ ., data = learning_rate)
+learning_rate_model_summary <- ols_step_both_p(learning_rate_model, details = T)
+
+```
+
+## Obtaining Bayesian Information Criterion Values
+
+```{r, echo=FALSE}
+
+m1_LR <- lm(Learning_Rate ~ Language_Aptitude, learning_rate)
+m2_LR <- lm(Learning_Rate ~ Language_Aptitude + Fluid_Intelligence, learning_rate)
+m3_LR <- lm(Learning_Rate ~ Language_Aptitude + Fluid_Intelligence + Right_FrontoTemporal_Beta_Power, learning_rate)
+m4_LR <- lm(Learning_Rate ~ Language_Aptitude + Fluid_Intelligence + Right_FrontoTemporal_Beta_Power + Numeracy, learning_rate)
+
+kable(BIC(m1_LR, m2_LR, m3_LR, m4_LR))
+
+```
+
+\pagebreak
+
+# DV #2: Programming Accuracy
+
+## Predictors:
+
+* Fluid Intelligence
+* Language Aptitude
+* Numeracy 
+* Working Memory Updating 
+* Working Memory Span
+* Left Posterior Beta Coherence
+* Left Posterior Theta Coherence
+
+```{r, include=FALSE}
+
+prog_accuracy <- rawdata[, c("Programming_Accuracy", "Fluid_Intelligence", "Language_Aptitude", "Numeracy",
+                             "Working_Memory_Updating", "Working_Memory_Span", "Left_Posterior_Beta_Coherence",
+                             "Left_Posterior_Theta_Coherence")] %>% na.omit()
+
+```
+
+## Stepwise Regression: Predicting Programming Accuracy
+
+All seven (7) predictors are entered into the stepwise regression. The final model consists of Fluid Intelligence, Language Aptitude, and Working Memory Updating.
+
+```{r, echo=FALSE}
+
+prog_accuracy_model <- lm(Programming_Accuracy ~ ., data = prog_accuracy)
+prog_accuracy_model_summary <- ols_step_both_p(prog_accuracy_model, details = T)
+
+```
+
+## Obtaining Bayesian Information Criterion Values
+
+```{r, echo=FALSE}
+
+m1_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence, prog_accuracy)
+m2_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence + Language_Aptitude, prog_accuracy)
+m3_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence + Language_Aptitude + Working_Memory_Updating, prog_accuracy)
+
+kable(BIC(m1_PA, m2_PA, m3_PA))
+
+```
+
+\pagebreak
+
+# DV #3: Declarative Knowledge
+
+## Predictors:
+
+* Fluid Intelligence 
+* Language Aptitude 
+* Numeracy
+* Working Memory Updating 
+* Inhibitory Control 
+* Vocabulary 
+* Right Posterior Low Gamma Power
+* Right Fronto-Temporal Gamma Power
+
+```{r, include=FALSE}
+
+declarative <- rawdata[, c("Declarative_Knowledge", "Fluid_Intelligence", "Language_Aptitude", "Numeracy",
+                           "Working_Memory_Updating", "Inhibitory_Control", "Vocabulary", 
+                           "Right_Posterior_Low_Gamma_Power", "Right_FrontoTemporal_Low_Gamma_Power")] %>% na.omit()
+
+```
+
+## Stepwise Regression: Predicting Declarative Knowledge
+
+All eight (8) predictors are entered into the stepwise regression. The final model consists of Fluid Intelligence and Right Fronto-Temporal Gamma Power.
+
+```{r, echo=FALSE}
+
+dec_knowledge_model <- lm(Declarative_Knowledge ~ ., data = declarative)
+dec_knowledge_model_summary <- ols_step_both_p(dec_knowledge_model, details = T)
+
+```
+
+## Obtaining Bayesian Information Criterion Values
+
+```{r, echo=FALSE}
+
+m1_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence, declarative)
+m2_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence + Right_FrontoTemporal_Low_Gamma_Power, declarative)
+
+kable(BIC(m1_DK, m2_DK))
+
+```
