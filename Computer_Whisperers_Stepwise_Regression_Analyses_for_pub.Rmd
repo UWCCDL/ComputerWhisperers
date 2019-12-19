@@ -1,10 +1,13 @@
 ---
-title: "Computer Whisperers: Stepwise Regression Analyses"
+title: 'Computer Whisperers: Stepwise Regression Analyses'
 author: "Chantel S. Prat, Tara M. Madhyastha, Malayka J. Mottarella, Chu-Hsuan Kuo"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: 
+output:
   pdf_document:
-    toc: true
+    toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
 ---
 
 \pagebreak
@@ -19,7 +22,7 @@ https://www.rdocumentation.org/packages/olsrr/versions/0.5.2
 
 Specifically, the stepwise regression method we chose (ols_step_both_p) builds a "regression model from a set of candidate predictor variables by entering and removing predictors based on p values, in a stepwise manner until there is no variable left to enter or remove any more." Missing values are removed in a listwise manner prior to running the stepwise regression for every dependent variable. Only participants with an EEG Usability score of 1 or greater (indicating that they had at least one detectable alpha peak in the O2 channel) were utilized in analyses.
 
-Finally, Bayesian Information Criterion (BIC) values are reported for every step of the regression analyses for every dependent variable, up to the final model output determined by the stepwise regression.
+Finally, Bayesian Information Criterion (BIC) values are reported for every step of the regression analyses for every dependent variable, up to the final model output determined by the stepwise regression. BIC values are also reported for models that include an additional excluded variable on top of the variables included in the final model to allow for comparison with the final model determined by the stepwise regression.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
@@ -65,6 +68,8 @@ learning_rate_model_summary <- ols_step_both_p(learning_rate_model, details = T)
 
 ## Obtaining Bayesian Information Criterion Values
 
+m1 through m4 are models produced by each step of the stepwise regression, with m4 being the final model with the best BIC value. m5a (+ Working Memory Span) and m5b (+ Working Memory Updating) are models that include an additional variable on top of the variables included in the final model; they have worse BIC values compared to m4.
+
 ```{r, echo=FALSE}
 
 m1_LR <- lm(Learning_Rate ~ Language_Aptitude, learning_rate)
@@ -72,7 +77,19 @@ m2_LR <- lm(Learning_Rate ~ Language_Aptitude + Fluid_Intelligence, learning_rat
 m3_LR <- lm(Learning_Rate ~ Language_Aptitude + Fluid_Intelligence + Right_FrontoTemporal_Beta_Power, learning_rate)
 m4_LR <- lm(Learning_Rate ~ Language_Aptitude + Fluid_Intelligence + Right_FrontoTemporal_Beta_Power + Numeracy, learning_rate)
 
-kable(BIC(m1_LR, m2_LR, m3_LR, m4_LR))
+m5a_LR <- lm(Learning_Rate ~ Language_Aptitude + Fluid_Intelligence + Right_FrontoTemporal_Beta_Power + Numeracy + Working_Memory_Span, learning_rate)
+m5b_LR <- lm(Learning_Rate ~ Language_Aptitude + Fluid_Intelligence + Right_FrontoTemporal_Beta_Power + Numeracy + Working_Memory_Updating, learning_rate)
+
+kable(BIC(m1_LR, m2_LR, m3_LR, m4_LR, m5a_LR, m5b_LR))
+
+```
+
+```{r, include=FALSE}
+
+#These summaries were used to obtain R squared and p-values for models m5a and m5b.
+
+summary(m5a_LR)
+summary(m5b_LR)
 
 ```
 
@@ -111,13 +128,31 @@ prog_accuracy_model_summary <- ols_step_both_p(prog_accuracy_model, details = T)
 
 ## Obtaining Bayesian Information Criterion Values
 
+m1 through m3 are models produced by each step of the stepwise regression, with m3 being the final model with the best BIC value. m4a (+ Numeracy), m4b (+ Working Memory Span), m4c (+ Left Posterior Beta Coherence), and m4d (+ Left Posterior Theta Coherence) are models that include an additional variable on top of the variables included in the final model; they have worse BIC values compared to m3.
+
 ```{r, echo=FALSE}
 
 m1_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence, prog_accuracy)
 m2_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence + Language_Aptitude, prog_accuracy)
 m3_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence + Language_Aptitude + Working_Memory_Updating, prog_accuracy)
 
-kable(BIC(m1_PA, m2_PA, m3_PA))
+m4a_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence + Language_Aptitude + Working_Memory_Updating + Numeracy, prog_accuracy)
+m4b_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence + Language_Aptitude + Working_Memory_Updating + Working_Memory_Span, prog_accuracy)
+m4c_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence + Language_Aptitude + Working_Memory_Updating + Left_Posterior_Beta_Coherence, prog_accuracy)
+m4d_PA <- lm(Programming_Accuracy ~ Fluid_Intelligence + Language_Aptitude + Working_Memory_Updating + Left_Posterior_Theta_Coherence, prog_accuracy)
+
+kable(BIC(m1_PA, m2_PA, m3_PA, m4a_PA, m4b_PA, m4c_PA, m4d_PA))
+
+```
+
+```{r, include=FALSE}
+
+#These summaries were used to obtain R squared and p-values for models m4a through m4d.
+
+summary(m4a_PA)
+summary(m4b_PA)
+summary(m4c_PA)
+summary(m4d_PA)
 
 ```
 
@@ -157,11 +192,33 @@ dec_knowledge_model_summary <- ols_step_both_p(dec_knowledge_model, details = T)
 
 ## Obtaining Bayesian Information Criterion Values
 
+m1 and m2 are models produced by each step of the stepwise regression, with m2 being the final model with the best BIC value. m3a (+ Language Aptitude), m3b (+ Numeracy), m3c (+ Working Memory Updating), m3d (+ Inhibitory Control), m3e (+ Vocabulary), and m3f (+ Right Posterior Low Gamma Power) are models that include an additional variable on top of the variables included in the final model; they have worse BIC values compared to m2.
+
 ```{r, echo=FALSE}
 
 m1_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence, declarative)
 m2_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence + Right_FrontoTemporal_Low_Gamma_Power, declarative)
 
-kable(BIC(m1_DK, m2_DK))
+m3a_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence + Right_FrontoTemporal_Low_Gamma_Power + Language_Aptitude, declarative)
+m3b_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence + Right_FrontoTemporal_Low_Gamma_Power + Numeracy , declarative)
+m3c_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence + Right_FrontoTemporal_Low_Gamma_Power + Working_Memory_Updating, declarative)
+m3d_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence + Right_FrontoTemporal_Low_Gamma_Power + Inhibitory_Control, declarative)
+m3e_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence + Right_FrontoTemporal_Low_Gamma_Power + Vocabulary, declarative)
+m3f_DK <- lm(Declarative_Knowledge ~ Fluid_Intelligence + Right_FrontoTemporal_Low_Gamma_Power + Right_Posterior_Low_Gamma_Power, declarative)
+
+kable(BIC(m1_DK, m2_DK, m3a_DK, m3b_DK, m3c_DK, m3d_DK, m3e_DK, m3f_DK))
+
+```
+
+```{r, include=FALSE}
+
+#These summaries were used to obtain R squared and p-values for models m3a through m3f.
+
+summary(m3a_DK)
+summary(m3b_DK)
+summary(m3c_DK)
+summary(m3d_DK)
+summary(m3e_DK)
+summary(m3f_DK)
 
 ```
